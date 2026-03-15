@@ -6,9 +6,10 @@ import {
   Shield,
   Radio,
   User,
+  Kanban,
 } from "lucide-react";
 
-export type View = "dashboard" | "businesses" | "governance" | "feed" | "owner";
+export type View = "dashboard" | "pipeline" | "businesses" | "governance" | "feed" | "owner";
 
 interface SidebarProps {
   active: View;
@@ -17,6 +18,7 @@ interface SidebarProps {
 
 const NAV_ITEMS: { id: View; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "pipeline", label: "Pipeline", icon: Kanban },
   { id: "businesses", label: "Businesses", icon: Building2 },
   { id: "governance", label: "Governance", icon: Shield },
   { id: "feed", label: "Live Feed", icon: Radio },

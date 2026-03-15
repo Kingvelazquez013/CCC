@@ -7,6 +7,12 @@ services:
     volumes:
       # Mount your layered cake (read-only) so the dashboard can read it
       - ~/.claude:/home/nextjs/.claude:ro
+      # Writable volume for SQLite task database
+      - ccc-data:/app/data
     environment:
       - HOME=/home/nextjs
+      - DATA_DIR=/app/data
     restart: unless-stopped
+
+volumes:
+  ccc-data:

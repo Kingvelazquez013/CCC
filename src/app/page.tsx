@@ -7,6 +7,7 @@ import BusinessCard from "@/components/BusinessCard";
 import LiveFeed from "@/components/LiveFeed";
 import GovernanceView from "@/components/GovernanceView";
 import OwnerPanel from "@/components/OwnerPanel";
+import KanbanBoard from "@/components/KanbanBoard";
 import {
   Building2,
   FolderTree,
@@ -158,6 +159,13 @@ export default function Home() {
               <div className="bg-surface-1 rounded-xl border border-white/5 p-5">
                 <LiveFeed />
               </div>
+            </div>
+          )}
+
+          {/* ── Pipeline View ── */}
+          {view === "pipeline" && (
+            <div className="h-[calc(100vh-6rem)] animate-fade-in">
+              <KanbanBoard businesses={businesses} />
             </div>
           )}
 
