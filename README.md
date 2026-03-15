@@ -10,7 +10,7 @@ I'm Ryan — I build AI-powered tools for people who want to move faster without
 
 I'm sharing it because the hardest part of adopting AI tools isn't the AI — it's organizing the *stuff around it*. CCC gives you a home base. Fork it, run it, make it yours.
 
-Follow along: #ridewithryan Linktree: [Linktree](https://linktr.ee/3velazquezAI)
+Follow along: #ridewithryan Linktree: [3VelazquezAI](https://linktr.ee/3velazquezAI)
 
 ---
 
