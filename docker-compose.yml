@@ -1,0 +1,12 @@
+services:
+  ccc:
+    build: .
+    container_name: claude-command-center
+    ports:
+      - "4000:4000"
+    volumes:
+      # Mount your layered cake (read-only) so the dashboard can read it
+      - ~/.claude:/home/nextjs/.claude:ro
+    environment:
+      - HOME=/home/nextjs
+    restart: unless-stopped
