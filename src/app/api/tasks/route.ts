@@ -3,15 +3,15 @@ import { getAllTasks, createTask, getTaskLogs } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-export function GET(request: Request) {
+export async function GET(request: Request) {
   const url = new URL(request.url);
   const logs = url.searchParams.get("logs");
 
   if (logs === "true") {
-    return NextResponse.json(getTaskLogs());
+    return NextResponse.json(await getTaskLogs());
   }
 
-  return NextResponse.json(getAllTasks());
+  return NextResponse.json(await getAllTasks());
 }
 
 export async function POST(request: Request) {
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const task = createTask({
+  const task = await createTask({
     title: body.title,
     description: body.description,
     business: body.business,

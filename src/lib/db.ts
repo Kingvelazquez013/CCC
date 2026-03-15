@@ -1,44 +1,13 @@
-import Database from "better-sqlite3";
-import path from "path";
-import fs from "fs";
-import { v4 as uuid } from "uuid";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
-const DB_PATH = path.join(DATA_DIR, "ccc.db");
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.SUPABASE_ANON_KEY!;
 
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+let _client: SupabaseClient | null = null;
+function getClient(): SupabaseClient {
+  if (!_client) _client = createClient(supabaseUrl, supabaseKey);
+  return _client;
 }
-
-const db = new Database(DB_PATH);
-db.pragma("journal_mode = WAL");
-db.pragma("foreign_keys = ON");
-
-db.exec(`
-  CREATE TABLE IF NOT EXISTS tasks (
-    id TEXT PRIMARY KEY,
-    title TEXT NOT NULL,
-    description TEXT DEFAULT '',
-    business TEXT NOT NULL,
-    department TEXT DEFAULT '',
-    assigned_agent TEXT DEFAULT '',
-    stage TEXT NOT NULL DEFAULT 'backlog',
-    priority TEXT NOT NULL DEFAULT 'medium',
-    created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS task_log (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    task_id TEXT NOT NULL,
-    action TEXT NOT NULL,
-    from_stage TEXT,
-    to_stage TEXT,
-    detail TEXT DEFAULT '',
-    created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
-  );
-`);
 
 export type Stage =
   | "backlog"
@@ -93,108 +62,84 @@ export interface UpdateTaskInput {
   priority?: Priority;
 }
 
-const stmtGetAll = db.prepare(
-  "SELECT * FROM tasks ORDER BY CASE priority WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 END, updated_at DESC"
-);
+const PRIORITY_ORDER: Record<string, number> = {
+  urgent: 0,
+  high: 1,
+  medium: 2,
+  low: 3,
+};
 
-const stmtGetById = db.prepare("SELECT * FROM tasks WHERE id = ?");
-
-const stmtInsert = db.prepare(`
-  INSERT INTO tasks (id, title, description, business, department, assigned_agent, stage, priority)
-  VALUES (@id, @title, @description, @business, @department, @assigned_agent, @stage, @priority)
-`);
-
-const stmtDelete = db.prepare("DELETE FROM tasks WHERE id = ?");
-
-const stmtInsertLog = db.prepare(`
-  INSERT INTO task_log (task_id, action, from_stage, to_stage, detail)
-  VALUES (@task_id, @action, @from_stage, @to_stage, @detail)
-`);
-
-const stmtGetLogs = db.prepare(
-  "SELECT * FROM task_log ORDER BY created_at DESC LIMIT 50"
-);
-
-export function getAllTasks(): Task[] {
-  return stmtGetAll.all() as Task[];
+export async function getAllTasks(): Promise<Task[]> {
+  const { data, error } = await getClient().from("tasks").select("*");
+  if (error) throw error;
+  return (data as Task[]).sort((a, b) => {
+    const pa = PRIORITY_ORDER[a.priority] ?? 99;
+    const pb = PRIORITY_ORDER[b.priority] ?? 99;
+    if (pa !== pb) return pa - pb;
+    return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+  });
 }
 
-export function getTaskById(id: string): Task | undefined {
-  return stmtGetById.get(id) as Task | undefined;
+export async function getTaskById(id: string): Promise<Task | undefined> {
+  const { data, error } = await getClient()
+    .from("tasks")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (error) return undefined;
+  return data as Task;
 }
 
-export function createTask(input: CreateTaskInput): Task {
-  const id = uuid();
-  const task = {
-    id,
-    title: input.title,
-    description: input.description || "",
-    business: input.business,
-    department: input.department || "",
-    assigned_agent: input.assigned_agent || "",
-    stage: input.stage || "backlog",
-    priority: input.priority || "medium",
-  };
+export async function createTask(input: CreateTaskInput): Promise<Task> {
+  const db = getClient();
+  const { data, error } = await db
+    .from("tasks")
+    .insert({
+      title: input.title,
+      description: input.description || "",
+      business: input.business,
+      department: input.department || "",
+      assigned_agent: input.assigned_agent || "",
+      stage: input.stage || "backlog",
+      priority: input.priority || "medium",
+    })
+    .select()
+    .single();
 
-  stmtInsert.run(task);
+  if (error) throw error;
+  const created = data as Task;
 
-  stmtInsertLog.run({
-    task_id: id,
+  await db.from("task_log").insert({
+    task_id: created.id,
     action: "created",
     from_stage: null,
-    to_stage: task.stage,
-    detail: `Task "${task.title}" created for ${task.business}`,
+    to_stage: created.stage,
+    detail: `Task "${created.title}" created for ${created.business}`,
   });
 
-  return getTaskById(id) as Task;
+  return created;
 }
 
-export function updateTask(id: string, input: UpdateTaskInput): Task | null {
-  const existing = getTaskById(id);
+export async function updateTask(
+  id: string,
+  input: UpdateTaskInput
+): Promise<Task | null> {
+  const db = getClient();
+  const existing = await getTaskById(id);
   if (!existing) return null;
 
-  const fields: string[] = [];
-  const values: Record<string, string> = { id };
+  const { data, error } = await db
+    .from("tasks")
+    .update(input)
+    .eq("id", id)
+    .select()
+    .single();
 
-  if (input.title !== undefined) {
-    fields.push("title = @title");
-    values.title = input.title;
-  }
-  if (input.description !== undefined) {
-    fields.push("description = @description");
-    values.description = input.description;
-  }
-  if (input.business !== undefined) {
-    fields.push("business = @business");
-    values.business = input.business;
-  }
-  if (input.department !== undefined) {
-    fields.push("department = @department");
-    values.department = input.department;
-  }
-  if (input.assigned_agent !== undefined) {
-    fields.push("assigned_agent = @assigned_agent");
-    values.assigned_agent = input.assigned_agent;
-  }
-  if (input.stage !== undefined) {
-    fields.push("stage = @stage");
-    values.stage = input.stage;
-  }
-  if (input.priority !== undefined) {
-    fields.push("priority = @priority");
-    values.priority = input.priority;
-  }
-
-  if (fields.length === 0) return existing;
-
-  fields.push("updated_at = datetime('now')");
-
-  db.prepare(`UPDATE tasks SET ${fields.join(", ")} WHERE id = @id`).run(
-    values
-  );
+  if (error) throw error;
+  const updated = data as Task;
 
   if (input.stage && input.stage !== existing.stage) {
-    stmtInsertLog.run({
+    await db.from("task_log").insert({
       task_id: id,
       action: "stage_changed",
       from_stage: existing.stage,
@@ -207,7 +152,7 @@ export function updateTask(id: string, input: UpdateTaskInput): Task | null {
     input.assigned_agent &&
     input.assigned_agent !== existing.assigned_agent
   ) {
-    stmtInsertLog.run({
+    await db.from("task_log").insert({
       task_id: id,
       action: "assigned",
       from_stage: null,
@@ -215,15 +160,15 @@ export function updateTask(id: string, input: UpdateTaskInput): Task | null {
       detail: `"${existing.title}" assigned to ${input.assigned_agent}`,
     });
   }
-
-  return getTaskById(id) as Task;
+  return updated;
 }
 
-export function deleteTask(id: string): boolean {
-  const existing = getTaskById(id);
+export async function deleteTask(id: string): Promise<boolean> {
+  const db = getClient();
+  const existing = await getTaskById(id);
   if (!existing) return false;
 
-  stmtInsertLog.run({
+  await db.from("task_log").insert({
     task_id: id,
     action: "deleted",
     from_stage: existing.stage,
@@ -231,10 +176,23 @@ export function deleteTask(id: string): boolean {
     detail: `"${existing.title}" deleted`,
   });
 
-  stmtDelete.run(id);
-  return true;
+  const { error } = await db.from("tasks").delete().eq("id", id);
+  return !error;
 }
 
-export function getTaskLogs(): TaskLog[] {
-  return stmtGetLogs.all() as TaskLog[];
+export async function getTaskLogs(): Promise<TaskLog[]> {
+  const { data, error } = await getClient()
+    .from("task_log")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(50);
+  if (error) throw error;
+  return data as TaskLog[];
+}
+
+export async function claimNextTask(): Promise<Task | null> {
+  const { data, error } = await getClient().rpc("claim_next_task");
+  if (error) throw error;
+  if (!data || data.length === 0) return null;
+  return data[0] as Task;
 }

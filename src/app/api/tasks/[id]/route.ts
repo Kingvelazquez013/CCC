@@ -3,11 +3,11 @@ import { getTaskById, updateTask, deleteTask } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-export function GET(
+export async function GET(
   _request: Request,
   { params }: { params: { id: string } }
 ) {
-  const task = getTaskById(params.id);
+  const task = await getTaskById(params.id);
   if (!task) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
@@ -19,7 +19,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   const body = await request.json();
-  const task = updateTask(params.id, body);
+  const task = await updateTask(params.id, body);
   if (!task) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
@@ -30,7 +30,7 @@ export async function DELETE(
   _request: Request,
   { params }: { params: { id: string } }
 ) {
-  const ok = deleteTask(params.id);
+  const ok = await deleteTask(params.id);
   if (!ok) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }

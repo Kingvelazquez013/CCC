@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import { scanBusinesses } from "@/lib/scanner";
+import { scanBusinesses, scanBusinessesFromSupabase } from "@/lib/scanner";
 
 export const dynamic = "force-dynamic";
 
-export function GET() {
-  const businesses = scanBusinesses();
-  return NextResponse.json(businesses);
+export async function GET() {
+  if (process.env.USE_SUPABASE_FILES) {
+    return NextResponse.json(await scanBusinessesFromSupabase());
+  }
+  return NextResponse.json(scanBusinesses());
 }

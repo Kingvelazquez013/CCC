@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { User, FileText } from "lucide-react";
+import { User, FileText, Pencil, X, Check } from "lucide-react";
 import MarkdownRenderer from "./MarkdownRenderer";
 
 interface OwnerFile {
@@ -20,6 +20,10 @@ const FILE_DESCRIPTIONS: Record<string, string> = {
 export default function OwnerPanel() {
   const [files, setFiles] = useState<OwnerFile[]>([]);
   const [activeFile, setActiveFile] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [savedMsg, setSavedMsg] = useState(false);
 
   useEffect(() => {
     fetch("/api/owner")
@@ -32,14 +36,49 @@ export default function OwnerPanel() {
 
   const current = files.find((f) => f.name === activeFile);
 
+  function startEdit() {
+    if (!current) return;
+    setDraft(current.content);
+    setEditing(true);
+  }
+
+  function cancelEdit() {
+    setEditing(false);
+    setDraft("");
+  }
+
+  async function saveEdit() {
+    if (!current) return;
+    setSaving(true);
+    const path = `_owner/${current.name}`;
+    await fetch("/api/files", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path, content: draft }),
+    });
+    // Update local state immediately
+    setFiles((prev) =>
+      prev.map((f) => (f.name === current.name ? { ...f, content: draft } : f))
+    );
+    setSaving(false);
+    setEditing(false);
+    setSavedMsg(true);
+    setTimeout(() => setSavedMsg(false), 2500);
+  }
+
   return (
     <div>
       <div className="flex items-center gap-2 mb-5">
         <User className="w-4 h-4 text-accent-emerald" />
         <h2 className="text-sm font-semibold text-zinc-200">Owner Layer</h2>
         <span className="text-[10px] text-zinc-600 font-mono bg-surface-2 px-2 py-0.5 rounded-full">
-          _owner/ (read-only)
+          _owner/
         </span>
+        {savedMsg && (
+          <span className="text-[10px] text-accent-emerald font-mono ml-auto">
+            saved — pull script will sync to disk
+          </span>
+        )}
       </div>
 
       {/* File selector */}
@@ -47,7 +86,10 @@ export default function OwnerPanel() {
         {files.map((file) => (
           <button
             key={file.name}
-            onClick={() => setActiveFile(file.name)}
+            onClick={() => {
+              setActiveFile(file.name);
+              setEditing(false);
+            }}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-150 ${
               activeFile === file.name
                 ? "bg-surface-3 border-accent-emerald/30 text-zinc-100"
@@ -67,8 +109,53 @@ export default function OwnerPanel() {
 
       {/* Content */}
       {current && (
-        <div className="bg-surface-1 rounded-xl border border-white/5 p-6 prose-dark animate-fade-in">
-          <MarkdownRenderer content={current.content} />
+        <div className="bg-surface-1 rounded-xl border border-white/5 overflow-hidden animate-fade-in">
+          {/* Toolbar */}
+          <div className="flex items-center justify-between px-5 py-2.5 border-b border-white/5">
+            <span className="text-[11px] text-zinc-600 font-mono">
+              _owner/{current.name}.md
+            </span>
+            <div className="flex items-center gap-2">
+              {editing ? (
+                <>
+                  <button
+                    onClick={cancelEdit}
+                    className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 px-2 py-1 rounded transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" /> Cancel
+                  </button>
+                  <button
+                    onClick={saveEdit}
+                    disabled={saving}
+                    className="flex items-center gap-1 text-xs text-accent-emerald hover:text-emerald-300 px-2 py-1 rounded transition-colors disabled:opacity-50"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    {saving ? "Saving..." : "Save"}
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={startEdit}
+                  className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 px-2 py-1 rounded transition-colors"
+                >
+                  <Pencil className="w-3.5 h-3.5" /> Edit
+                </button>
+              )}
+            </div>
+          </div>
+
+          {editing ? (
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              className="w-full min-h-[60vh] p-5 bg-surface-2 text-zinc-200 font-mono text-xs resize-none focus:outline-none"
+              spellCheck={false}
+            />
+          ) : (
+            <div className="p-6 prose-dark">
+              <MarkdownRenderer content={current.content} />
+            </div>
+          )}
         </div>
       )}
     </div>

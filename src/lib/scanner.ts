@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { createClient } from "@supabase/supabase-js";
 
 const CLAUDE_DIR = path.join(process.env.HOME || "/Users/velazquez", ".claude");
 const BUSINESSES_DIR = path.join(CLAUDE_DIR, "businesses");
@@ -184,4 +185,120 @@ export function scanTemplates(): TemplateFile[] {
 
 export function readGovernance(): string {
   return safeReadFile(path.join(CLAUDE_DIR, "GOVERNANCE.md"));
+}
+
+// ── Supabase-backed versions (used in production on Vercel) ───────────────────
+
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_ANON_KEY!
+  );
+}
+
+export async function scanOwnerFilesFromSupabase(): Promise<OwnerFile[]> {
+  const { data, error } = await getSupabaseClient()
+    .from("claude_files")
+    .select("path, content, updated_at")
+    .like("path", "_owner/%");
+  if (error || !data) return [];
+  return data.map((row) => ({
+    name: row.path.replace("_owner/", ""),
+    path: row.path,
+    content: row.content,
+    lastModified: new Date(row.updated_at),
+  }));
+}
+
+export async function readGovernanceFromSupabase(): Promise<string> {
+  const { data } = await getSupabaseClient()
+    .from("claude_files")
+    .select("content")
+    .eq("path", "GOVERNANCE")
+    .single();
+  return data?.content || "";
+}
+
+export async function scanProtocolsFromSupabase(): Promise<ProtocolFile[]> {
+  const { data, error } = await getSupabaseClient()
+    .from("claude_files")
+    .select("path, content")
+    .like("path", "_shared/protocols/%");
+  if (error || !data) return [];
+  return data.map((row) => ({
+    name: row.path.replace("_shared/protocols/", ""),
+    path: row.path,
+    content: row.content,
+  }));
+}
+
+export async function scanTemplatesFromSupabase(): Promise<TemplateFile[]> {
+  const { data, error } = await getSupabaseClient()
+    .from("claude_files")
+    .select("path")
+    .like("path", "_shared/templates/%");
+  if (error || !data) return [];
+  return data.map((row) => ({
+    name: row.path.replace("_shared/templates/", ""),
+    path: row.path,
+  }));
+}
+
+export async function scanBusinessesFromSupabase(): Promise<BusinessInfo[]> {
+  const { data, error } = await getSupabaseClient()
+    .from("claude_files")
+    .select("path, updated_at")
+    .like("path", "businesses/%");
+  if (error || !data) return [];
+
+  const displayNames: Record<string, string> = {
+    bookd: "book'd",
+    lifeos: "LifeOS",
+    "automotive-intelligence": "Automotive Intelligence",
+    bizzycar: "BizzyCar",
+  };
+
+  type BizEntry = {
+    slug: string;
+    depts: Map<string, string[]>;
+    latestMtime: Date | null;
+  };
+  const bizMap = new Map<string, BizEntry>();
+
+  for (const row of data) {
+    const parts = row.path.replace("businesses/", "").split("/");
+    const slug = parts[0];
+    const dept = parts[1];
+    const file = parts[2];
+    if (!bizMap.has(slug)) {
+      bizMap.set(slug, { slug, depts: new Map(), latestMtime: null });
+    }
+    const biz = bizMap.get(slug)!;
+    const mtime = new Date(row.updated_at);
+    if (!biz.latestMtime || mtime > biz.latestMtime) biz.latestMtime = mtime;
+    if (dept && file) {
+      if (!biz.depts.has(dept)) biz.depts.set(dept, []);
+      biz.depts.get(dept)!.push(file);
+    }
+  }
+
+  return Array.from(bizMap.values()).map(({ slug, depts, latestMtime }) => {
+    const departments: DepartmentInfo[] = Array.from(depts.entries()).map(
+      ([name, files]) => ({
+        name,
+        path: `businesses/${slug}/${name}`,
+        files,
+        hasSoul: files.some((f) => f.toUpperCase().includes("SOUL")),
+        hasGoals: files.some((f) => f.toUpperCase().includes("GOAL")),
+      })
+    );
+    return {
+      name: displayNames[slug] || slug,
+      slug,
+      path: `businesses/${slug}`,
+      departments,
+      fileCount: Array.from(depts.values()).reduce((s, f) => s + f.length, 0),
+      lastModified: latestMtime,
+    };
+  });
 }
