@@ -8,6 +8,8 @@ import LiveFeed from "@/components/LiveFeed";
 import GovernanceView from "@/components/GovernanceView";
 import OwnerPanel from "@/components/OwnerPanel";
 import KanbanBoard from "@/components/KanbanBoard";
+import AgentsPanel from "@/components/AgentsPanel";
+import TerminalPanel from "@/components/TerminalPanel";
 import {
   Building2,
   FolderTree,
@@ -196,6 +198,20 @@ export default function Home() {
           {view === "owner" && (
             <div className="">
               <OwnerPanel />
+            </div>
+          )}
+
+          {/* ── Agents View ── */}
+          {view === "agents" && (
+            <div className="">
+              <AgentsPanel />
+            </div>
+          )}
+
+          {/* ── Terminal View ── */}
+          {view === "terminal" && (
+            <div className="">
+              <TerminalPanel />
             </div>
           )}
         </main>

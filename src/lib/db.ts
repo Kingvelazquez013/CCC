@@ -11,6 +11,7 @@ function getClient(): SupabaseClient {
 
 export type Stage =
   | "backlog"
+  | "planning"
   | "assigned"
   | "working"
   | "review"

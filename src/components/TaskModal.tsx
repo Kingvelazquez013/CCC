@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
+import PlanningPanel from "./PlanningPanel";
 
 interface Task {
   id: string;
@@ -23,6 +24,7 @@ interface TaskModalProps {
 
 const STAGES = [
   { value: "backlog", label: "Backlog" },
+  { value: "planning", label: "Planning" },
   { value: "assigned", label: "Assigned" },
   { value: "working", label: "Working" },
   { value: "review", label: "Review" },
@@ -93,6 +95,22 @@ export default function TaskModal({
             <X className="w-4 h-4 text-zinc-500" />
           </button>
         </div>
+
+        {/* Planning Panel — shown when editing a task in planning stage */}
+        {isEdit && task.stage === "planning" && (
+          <div className="p-5 border-b border-white/5">
+            <PlanningPanel
+              taskId={task.id}
+              taskTitle={task.title}
+              onFinalize={() => {
+                onSave({ stage: "assigned" });
+              }}
+              onSkip={() => {
+                onSave({ stage: "assigned" });
+              }}
+            />
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-5 space-y-4">

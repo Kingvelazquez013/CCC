@@ -26,6 +26,7 @@ interface Business {
 
 const STAGES = [
   { id: "backlog", label: "Backlog" },
+  { id: "planning", label: "Planning" },
   { id: "assigned", label: "Assigned" },
   { id: "working", label: "Working" },
   { id: "review", label: "Review" },

@@ -7,9 +7,11 @@ import {
   Radio,
   User,
   Kanban,
+  Bot,
+  Terminal,
 } from "lucide-react";
 
-export type View = "dashboard" | "pipeline" | "businesses" | "governance" | "feed" | "owner";
+export type View = "dashboard" | "pipeline" | "businesses" | "governance" | "feed" | "owner" | "agents" | "terminal";
 
 interface SidebarProps {
   active: View;
@@ -19,10 +21,12 @@ interface SidebarProps {
 const NAV_ITEMS: { id: View; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "pipeline", label: "Pipeline", icon: Kanban },
+  { id: "agents", label: "Agents", icon: Bot },
   { id: "businesses", label: "Businesses", icon: Building2 },
   { id: "governance", label: "Governance", icon: Shield },
   { id: "feed", label: "Live Feed", icon: Radio },
   { id: "owner", label: "Owner", icon: User },
+  { id: "terminal", label: "Terminal", icon: Terminal },
 ];
 
 export default function Sidebar({ active, onChange }: SidebarProps) {

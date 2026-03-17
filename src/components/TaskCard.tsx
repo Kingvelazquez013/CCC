@@ -7,6 +7,7 @@ import {
   Building2,
   User,
   Clock,
+  MessageCircle,
 } from "lucide-react";
 
 interface Task {
@@ -23,7 +24,7 @@ interface Task {
 }
 
 /* ── Task Aging ─────────────────────────────────────────────────── */
-const AGING_STAGES = new Set(["assigned", "working", "review", "approved"]);
+const AGING_STAGES = new Set(["planning", "assigned", "working", "review", "approved"]);
 const AGING_THRESHOLDS = { warning: 1, danger: 3 }; // days
 
 type AgingLevel = "normal" | "warning" | "danger";
@@ -136,14 +137,21 @@ export default function TaskCard({
             {task.department ? `/${task.department}` : ""}
           </span>
         </div>
-        {task.assigned_agent && (
-          <div className="flex items-center gap-1">
-            <User className="w-3 h-3 text-zinc-600" />
-            <span className="text-[10px] text-zinc-500 font-mono">
-              {task.assigned_agent}
-            </span>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {task.stage === "planning" && (
+            <div className="flex items-center gap-1" title="In planning">
+              <MessageCircle className="w-3 h-3 text-blue-400" />
+            </div>
+          )}
+          {task.assigned_agent && (
+            <div className="flex items-center gap-1">
+              <User className="w-3 h-3 text-zinc-600" />
+              <span className="text-[10px] text-zinc-500 font-mono">
+                {task.assigned_agent}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -12,6 +12,11 @@ services:
     environment:
       - HOME=/home/nextjs
       - DATA_DIR=/app/data
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET:-}
+      - CCC_FORCE_MODEL=${CCC_FORCE_MODEL:-}
     restart: unless-stopped
 
 volumes:
