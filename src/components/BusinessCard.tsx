@@ -18,37 +18,6 @@ interface Business {
   lastModified: string | null;
 }
 
-const ACCENT_MAP: Record<string, { border: string; glow: string; dot: string; bg: string; text: string }> = {
-  bookd: {
-    border: "border-emerald-500/20",
-    glow: "glow-emerald",
-    dot: "bg-accent-emerald",
-    bg: "bg-emerald-500/5",
-    text: "text-accent-emerald",
-  },
-  lifeos: {
-    border: "border-cyan-500/20",
-    glow: "glow-cyan",
-    dot: "bg-accent-cyan",
-    bg: "bg-cyan-500/5",
-    text: "text-accent-cyan",
-  },
-  "automotive-intelligence": {
-    border: "border-amber-500/20",
-    glow: "glow-amber",
-    dot: "bg-accent-amber",
-    bg: "bg-amber-500/5",
-    text: "text-accent-amber",
-  },
-  bizzycar: {
-    border: "border-violet-500/20",
-    glow: "glow-violet",
-    dot: "bg-accent-violet",
-    bg: "bg-violet-500/5",
-    text: "text-accent-violet",
-  },
-};
-
 interface BusinessCardProps {
   business: Business;
   expanded: boolean;
@@ -56,7 +25,6 @@ interface BusinessCardProps {
 }
 
 export default function BusinessCard({ business, expanded, onToggle }: BusinessCardProps) {
-  const accent = ACCENT_MAP[business.slug] || ACCENT_MAP.bookd;
   const hasContent = business.fileCount > 0;
   const activeDepts = business.departments.filter(
     (d) => d.files.length > 0
@@ -64,7 +32,7 @@ export default function BusinessCard({ business, expanded, onToggle }: BusinessC
 
   return (
     <div
-      className={`rounded-xl border ${accent.border} ${accent.glow} ${accent.bg} transition-all duration-200 hover:scale-[1.01] cursor-pointer`}
+      className="rounded-xl border border-white/5 bg-surface-1 transition-colors duration-100 hover:border-white/10 cursor-pointer"
       onClick={onToggle}
       role="button"
       tabIndex={0}
@@ -74,8 +42,8 @@ export default function BusinessCard({ business, expanded, onToggle }: BusinessC
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg bg-surface-2`}>
-              <Building2 className={`w-4 h-4 ${accent.text}`} />
+            <div className="p-2 rounded-lg bg-surface-2">
+              <Building2 className="w-4 h-4 text-zinc-400" />
             </div>
             <div>
               <h3 className="font-semibold text-sm text-zinc-100">
@@ -88,37 +56,27 @@ export default function BusinessCard({ business, expanded, onToggle }: BusinessC
           </div>
           <span
             className={`w-2 h-2 rounded-full mt-1 ${
-              hasContent ? accent.dot : "bg-zinc-700"
-            } ${hasContent ? "animate-pulse_dot" : ""}`}
+              hasContent ? "bg-emerald-500" : "bg-zinc-700"
+            }`}
           />
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-4">
-          <div className="bg-surface-2/50 rounded-lg p-2.5 text-center">
-            <div className="text-lg font-semibold text-zinc-100">
-              {business.departments.length}
+          {[
+            { value: business.departments.length, label: "Depts" },
+            { value: business.fileCount, label: "Files" },
+            { value: activeDepts, label: "Active" },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-surface-2 rounded-lg p-2.5 text-center">
+              <div className="text-lg font-semibold text-zinc-100">
+                {stat.value}
+              </div>
+              <div className="text-[10px] text-zinc-600">
+                {stat.label}
+              </div>
             </div>
-            <div className="text-[10px] text-zinc-600 uppercase tracking-wide">
-              Depts
-            </div>
-          </div>
-          <div className="bg-surface-2/50 rounded-lg p-2.5 text-center">
-            <div className="text-lg font-semibold text-zinc-100">
-              {business.fileCount}
-            </div>
-            <div className="text-[10px] text-zinc-600 uppercase tracking-wide">
-              Files
-            </div>
-          </div>
-          <div className="bg-surface-2/50 rounded-lg p-2.5 text-center">
-            <div className="text-lg font-semibold text-zinc-100">
-              {activeDepts}
-            </div>
-            <div className="text-[10px] text-zinc-600 uppercase tracking-wide">
-              Active
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* Last modified */}
@@ -134,11 +92,11 @@ export default function BusinessCard({ business, expanded, onToggle }: BusinessC
 
       {/* Expanded department list */}
       {expanded && (
-        <div className="border-t border-white/5 px-5 py-3 space-y-1.5 animate-fade-in">
+        <div className="border-t border-white/5 px-5 py-3 space-y-1.5">
           {business.departments.map((dept) => (
             <div
               key={dept.name}
-              className="flex items-center justify-between py-1.5 px-2 rounded-md hover:bg-surface-2/50 transition-colors"
+              className="flex items-center justify-between py-1.5 px-2 rounded-md hover:bg-surface-2 transition-colors"
             >
               <div className="flex items-center gap-2">
                 <FolderOpen className="w-3.5 h-3.5 text-zinc-600" />
@@ -148,13 +106,13 @@ export default function BusinessCard({ business, expanded, onToggle }: BusinessC
               </div>
               <div className="flex items-center gap-2">
                 {dept.hasSoul && (
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono">
-                    SOUL
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-surface-3 text-zinc-400 font-mono">
+                    Soul
                   </span>
                 )}
                 {dept.hasGoals && (
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-mono">
-                    GOALS
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-surface-3 text-zinc-400 font-mono">
+                    Goals
                   </span>
                 )}
                 {dept.files.length > 0 ? (

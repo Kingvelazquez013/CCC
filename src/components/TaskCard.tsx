@@ -22,13 +22,6 @@ interface Task {
   updated_at: string;
 }
 
-const PRIORITY_COLORS: Record<string, string> = {
-  urgent: "bg-red-500/20 text-red-400 border-red-500/30",
-  high: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-  medium: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
-  low: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30",
-};
-
 /* ── Task Aging ─────────────────────────────────────────────────── */
 const AGING_STAGES = new Set(["assigned", "working", "review", "approved"]);
 const AGING_THRESHOLDS = { warning: 1, danger: 3 }; // days
@@ -46,19 +39,6 @@ function getAgingLevel(stage: string, updatedAt: string): AgingLevel {
 function getDaysInStage(updatedAt: string): number {
   return Math.floor((Date.now() - new Date(updatedAt).getTime()) / 86_400_000);
 }
-
-const AGING_BORDER: Record<AgingLevel, string> = {
-  normal: "border-white/5 hover:border-white/10",
-  warning: "border-amber-500/40 hover:border-amber-500/60 glow-warning",
-  danger: "border-red-500/50 hover:border-red-500/70 glow-danger animate-pulse-danger",
-};
-
-const BIZ_COLORS: Record<string, string> = {
-  bookd: "text-emerald-400",
-  lifeos: "text-cyan-400",
-  "automotive-intelligence": "text-amber-400",
-  bizzycar: "text-violet-400",
-};
 
 interface TaskCardProps {
   task: Task;
@@ -86,23 +66,21 @@ export default function TaskCard({
       draggable={draggable}
       onDragStart={onDragStart}
       onClick={onEdit}
-      className={`bg-surface-2 rounded-lg border p-3 cursor-grab active:cursor-grabbing transition-all duration-150 group ${AGING_BORDER[agingLevel]}`}
+      className="bg-surface-2 rounded-lg border border-white/5 p-3 cursor-grab active:cursor-grabbing hover:border-white/10 transition-colors duration-100 group"
     >
-      {/* Drag handle + priority */}
+      {/* Drag handle + priority + aging */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <GripVertical className="w-3 h-3 text-zinc-700 opacity-0 group-hover:opacity-100 transition-opacity" />
-          <span
-            className={`text-[9px] font-mono font-medium uppercase px-1.5 py-0.5 rounded border ${PRIORITY_COLORS[task.priority] || PRIORITY_COLORS.medium}`}
-          >
+          <span className="text-[9px] font-mono font-medium px-1.5 py-0.5 rounded bg-surface-3 text-zinc-400">
             {task.priority}
           </span>
           {agingLevel !== "normal" && (
             <span
               className={`flex items-center gap-0.5 text-[9px] font-mono font-medium px-1.5 py-0.5 rounded ${
                 agingLevel === "danger"
-                  ? "bg-red-500/20 text-red-400"
-                  : "bg-amber-500/20 text-amber-400"
+                  ? "text-red-400"
+                  : "text-amber-400"
               }`}
               title={`${daysInStage}d in ${task.stage}`}
             >
@@ -121,7 +99,7 @@ export default function TaskCard({
               className="p-1 rounded hover:bg-surface-4 transition-colors"
               title="Move to next stage"
             >
-              <ChevronRight className="w-3 h-3 text-accent-emerald" />
+              <ChevronRight className="w-3 h-3 text-zinc-400" />
             </button>
           )}
           <button
@@ -129,7 +107,7 @@ export default function TaskCard({
               e.stopPropagation();
               onDelete();
             }}
-            className="p-1 rounded hover:bg-red-500/20 transition-colors"
+            className="p-1 rounded hover:bg-red-500/10 transition-colors"
             title="Delete task"
           >
             <Trash2 className="w-3 h-3 text-zinc-600 hover:text-red-400" />
@@ -152,7 +130,7 @@ export default function TaskCard({
       {/* Footer: business + agent */}
       <div className="flex items-center justify-between mt-1">
         <div className="flex items-center gap-1">
-          <Building2 className={`w-3 h-3 ${BIZ_COLORS[task.business] || "text-zinc-500"}`} />
+          <Building2 className="w-3 h-3 text-zinc-600" />
           <span className="text-[10px] text-zinc-500 font-mono">
             {task.business}
             {task.department ? `/${task.department}` : ""}

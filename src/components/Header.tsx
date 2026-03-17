@@ -1,6 +1,6 @@
 "use client";
 
-import { Diamond, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 interface HeaderProps {
   onRefresh: () => void;
@@ -9,11 +9,10 @@ interface HeaderProps {
 
 export default function Header({ onRefresh, loading }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-50 glass border-b border-white/5">
+    <header className="sticky top-0 z-50 bg-surface-0 border-b border-white/5">
       <div className="flex items-center justify-between px-6 h-14">
         <div className="flex items-center gap-3">
-          <Diamond className="w-5 h-5 text-accent-emerald" />
-          <h1 className="text-sm font-semibold tracking-tight">
+          <h1 className="text-sm font-semibold text-zinc-100">
             Claude Command Center
           </h1>
           <span className="text-[10px] font-mono text-zinc-600 bg-surface-2 px-2 py-0.5 rounded-full">
@@ -23,7 +22,7 @@ export default function Header({ onRefresh, loading }: HeaderProps) {
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-xs text-zinc-500">
-            <span className="w-1.5 h-1.5 rounded-full bg-accent-emerald animate-pulse_dot" />
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             Live
           </div>
           <button

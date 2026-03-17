@@ -26,13 +26,6 @@ const EVENT_ICONS: Record<string, typeof FilePlus> = {
   dir_added: FolderPlus,
 };
 
-const EVENT_COLORS: Record<string, string> = {
-  file_added: "text-accent-emerald",
-  file_changed: "text-accent-cyan",
-  file_removed: "text-red-400",
-  dir_added: "text-accent-amber",
-};
-
 const EVENT_LABELS: Record<string, string> = {
   file_added: "Created",
   file_changed: "Modified",
@@ -76,13 +69,13 @@ export default function LiveFeed() {
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Radio className="w-4 h-4 text-accent-emerald" />
-          <h2 className="text-sm font-semibold text-zinc-200">Live Activity Feed</h2>
+          <Radio className="w-4 h-4 text-zinc-400" />
+          <h2 className="text-sm font-semibold text-zinc-200">Activity Feed</h2>
         </div>
         <div className="flex items-center gap-2 text-[11px]">
           <span
             className={`w-1.5 h-1.5 rounded-full ${
-              connected ? "bg-accent-emerald animate-pulse_dot" : "bg-zinc-700"
+              connected ? "bg-emerald-500" : "bg-zinc-700"
             }`}
           />
           <span className="text-zinc-500">
@@ -99,25 +92,20 @@ export default function LiveFeed() {
         {events.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-48 text-zinc-700">
             <Radio className="w-8 h-8 mb-3 opacity-30" />
-            <p className="text-xs">Watching ~/.claude/ for changes...</p>
-            <p className="text-[10px] mt-1">
-              Edit a file in your layered cake to see it here
-            </p>
+            <p className="text-xs">Watching for changes...</p>
           </div>
         ) : (
-          events.map((event, i) => {
+          events.map((event) => {
             const Icon = EVENT_ICONS[event.type] || FileEdit;
-            const color = EVENT_COLORS[event.type] || "text-zinc-400";
             return (
               <div
                 key={event.id}
-                className="flex items-start gap-3 py-2 px-3 rounded-lg hover:bg-surface-2/50 transition-colors animate-slide-in"
-                style={{ animationDelay: `${Math.min(i * 20, 200)}ms` }}
+                className="flex items-start gap-3 py-2 px-3 rounded-lg hover:bg-surface-2 transition-colors"
               >
-                <Icon className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${color}`} />
+                <Icon className="w-3.5 h-3.5 mt-0.5 shrink-0 text-zinc-500" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-medium uppercase tracking-wide ${color}`}>
+                    <span className="text-[10px] font-medium text-zinc-400">
                       {EVENT_LABELS[event.type]}
                     </span>
                     {event.business && (
@@ -126,7 +114,7 @@ export default function LiveFeed() {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-zinc-400 font-mono truncate mt-0.5">
+                  <p className="text-xs text-zinc-500 font-mono truncate mt-0.5">
                     {event.path}
                   </p>
                 </div>

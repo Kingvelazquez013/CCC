@@ -56,7 +56,6 @@ export default function OwnerPanel() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ path, content: draft }),
     });
-    // Update local state immediately
     setFiles((prev) =>
       prev.map((f) => (f.name === current.name ? { ...f, content: draft } : f))
     );
@@ -69,14 +68,11 @@ export default function OwnerPanel() {
   return (
     <div>
       <div className="flex items-center gap-2 mb-5">
-        <User className="w-4 h-4 text-accent-emerald" />
+        <User className="w-4 h-4 text-zinc-400" />
         <h2 className="text-sm font-semibold text-zinc-200">Owner Layer</h2>
-        <span className="text-[10px] text-zinc-600 font-mono bg-surface-2 px-2 py-0.5 rounded-full">
-          _owner/
-        </span>
         {savedMsg && (
-          <span className="text-[10px] text-accent-emerald font-mono ml-auto">
-            saved — pull script will sync to disk
+          <span className="text-[10px] text-emerald-400 font-mono ml-auto">
+            Saved
           </span>
         )}
       </div>
@@ -90,9 +86,9 @@ export default function OwnerPanel() {
               setActiveFile(file.name);
               setEditing(false);
             }}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-150 ${
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors duration-100 ${
               activeFile === file.name
-                ? "bg-surface-3 border-accent-emerald/30 text-zinc-100"
+                ? "bg-surface-3 border-white/10 text-zinc-100"
                 : "bg-surface-1 border-white/5 text-zinc-500 hover:text-zinc-300 hover:border-white/10"
             }`}
           >
@@ -109,11 +105,11 @@ export default function OwnerPanel() {
 
       {/* Content */}
       {current && (
-        <div className="bg-surface-1 rounded-xl border border-white/5 overflow-hidden animate-fade-in">
+        <div className="bg-surface-1 rounded-xl border border-white/5 overflow-hidden">
           {/* Toolbar */}
           <div className="flex items-center justify-between px-5 py-2.5 border-b border-white/5">
             <span className="text-[11px] text-zinc-600 font-mono">
-              _owner/{current.name}.md
+              {current.name}.md
             </span>
             <div className="flex items-center gap-2">
               {editing ? (
@@ -127,7 +123,7 @@ export default function OwnerPanel() {
                   <button
                     onClick={saveEdit}
                     disabled={saving}
-                    className="flex items-center gap-1 text-xs text-accent-emerald hover:text-emerald-300 px-2 py-1 rounded transition-colors disabled:opacity-50"
+                    className="flex items-center gap-1 text-xs text-zinc-100 hover:text-white px-2 py-1 rounded transition-colors disabled:opacity-50"
                   >
                     <Check className="w-3.5 h-3.5" />
                     {saving ? "Saving..." : "Save"}

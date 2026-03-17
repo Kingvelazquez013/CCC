@@ -77,7 +77,7 @@ export default function TaskModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className="bg-surface-1 rounded-xl border border-white/10 w-full max-w-lg mx-4 animate-fade-in">
@@ -98,7 +98,7 @@ export default function TaskModal({
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           {/* Title */}
           <div>
-            <label className="block text-[11px] text-zinc-500 uppercase tracking-wide mb-1.5">
+            <label className="block text-[11px] text-zinc-500 mb-1.5">
               Title
             </label>
             <input
@@ -107,13 +107,13 @@ export default function TaskModal({
               onChange={(e) => setTitle(e.target.value)}
               placeholder="What needs to be done?"
               autoFocus
-              className="w-full bg-surface-2 border border-white/5 rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-accent-emerald/50 transition-colors"
+              className="w-full bg-surface-2 border border-white/5 rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-white/20 transition-colors"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-[11px] text-zinc-500 uppercase tracking-wide mb-1.5">
+            <label className="block text-[11px] text-zinc-500 mb-1.5">
               Description
             </label>
             <textarea
@@ -121,20 +121,20 @@ export default function TaskModal({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Details, context, requirements..."
               rows={3}
-              className="w-full bg-surface-2 border border-white/5 rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-accent-emerald/50 transition-colors resize-none"
+              className="w-full bg-surface-2 border border-white/5 rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-white/20 transition-colors resize-none"
             />
           </div>
 
           {/* Business + Department row */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[11px] text-zinc-500 uppercase tracking-wide mb-1.5">
+              <label className="block text-[11px] text-zinc-500 mb-1.5">
                 Business
               </label>
               <select
                 value={business}
                 onChange={(e) => setBusiness(e.target.value)}
-                className="w-full bg-surface-2 border border-white/5 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-accent-emerald/50 transition-colors"
+                className="w-full bg-surface-2 border border-white/5 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-white/20 transition-colors"
               >
                 {businesses.map((b) => (
                   <option key={b.slug} value={b.slug}>
@@ -144,13 +144,13 @@ export default function TaskModal({
               </select>
             </div>
             <div>
-              <label className="block text-[11px] text-zinc-500 uppercase tracking-wide mb-1.5">
+              <label className="block text-[11px] text-zinc-500 mb-1.5">
                 Department
               </label>
               <select
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
-                className="w-full bg-surface-2 border border-white/5 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-accent-emerald/50 transition-colors"
+                className="w-full bg-surface-2 border border-white/5 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-white/20 transition-colors"
               >
                 <option value="">Any</option>
                 {departments.map((d) => (
@@ -165,13 +165,13 @@ export default function TaskModal({
           {/* Priority + Stage row */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[11px] text-zinc-500 uppercase tracking-wide mb-1.5">
+              <label className="block text-[11px] text-zinc-500 mb-1.5">
                 Priority
               </label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                className="w-full bg-surface-2 border border-white/5 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-accent-emerald/50 transition-colors"
+                className="w-full bg-surface-2 border border-white/5 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-white/20 transition-colors"
               >
                 {PRIORITIES.map((p) => (
                   <option key={p.value} value={p.value}>
@@ -181,13 +181,13 @@ export default function TaskModal({
               </select>
             </div>
             <div>
-              <label className="block text-[11px] text-zinc-500 uppercase tracking-wide mb-1.5">
+              <label className="block text-[11px] text-zinc-500 mb-1.5">
                 Stage
               </label>
               <select
                 value={stage}
                 onChange={(e) => setStage(e.target.value)}
-                className="w-full bg-surface-2 border border-white/5 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-accent-emerald/50 transition-colors"
+                className="w-full bg-surface-2 border border-white/5 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-white/20 transition-colors"
               >
                 {STAGES.map((s) => (
                   <option key={s.value} value={s.value}>
@@ -200,15 +200,15 @@ export default function TaskModal({
 
           {/* Assigned Agent */}
           <div>
-            <label className="block text-[11px] text-zinc-500 uppercase tracking-wide mb-1.5">
+            <label className="block text-[11px] text-zinc-500 mb-1.5">
               Assigned Agent
             </label>
             <input
               type="text"
               value={assignedAgent}
               onChange={(e) => setAssignedAgent(e.target.value)}
-              placeholder="e.g. lead-sourcer, outreach-sequencer"
-              className="w-full bg-surface-2 border border-white/5 rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-accent-emerald/50 transition-colors"
+              placeholder="e.g. eng-agent, content-agent"
+              className="w-full bg-surface-2 border border-white/5 rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-white/20 transition-colors"
             />
           </div>
 
@@ -224,7 +224,7 @@ export default function TaskModal({
             <button
               type="submit"
               disabled={!title.trim() || !business}
-              className="px-4 py-2 rounded-lg text-xs font-medium bg-accent-emerald/20 text-accent-emerald hover:bg-accent-emerald/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="px-4 py-2 rounded-lg text-xs font-medium bg-zinc-100 text-zinc-900 hover:bg-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
               {isEdit ? "Save Changes" : "Create Task"}
             </button>

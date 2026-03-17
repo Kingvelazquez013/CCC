@@ -25,12 +25,12 @@ interface Business {
 }
 
 const STAGES = [
-  { id: "backlog", label: "Backlog", color: "border-zinc-700" },
-  { id: "assigned", label: "Assigned", color: "border-violet-500/40" },
-  { id: "working", label: "Working", color: "border-cyan-500/40" },
-  { id: "review", label: "Review", color: "border-amber-500/40" },
-  { id: "approved", label: "Approved", color: "border-emerald-500/40" },
-  { id: "done", label: "Done", color: "border-emerald-500/60" },
+  { id: "backlog", label: "Backlog" },
+  { id: "assigned", label: "Assigned" },
+  { id: "working", label: "Working" },
+  { id: "review", label: "Review" },
+  { id: "approved", label: "Approved" },
+  { id: "done", label: "Done" },
 ];
 
 const STAGE_ORDER = STAGES.map((s) => s.id);
@@ -130,7 +130,7 @@ export default function KanbanBoard({ businesses }: KanbanBoardProps) {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Kanban className="w-4 h-4 text-accent-emerald" />
+          <Kanban className="w-4 h-4 text-zinc-400" />
           <h2 className="text-sm font-semibold text-zinc-200">Pipeline</h2>
           <span className="text-[10px] text-zinc-600 bg-surface-2 px-2 py-0.5 rounded-full font-mono">
             {filteredTasks.length} tasks
@@ -156,7 +156,7 @@ export default function KanbanBoard({ businesses }: KanbanBoardProps) {
           {/* New task button */}
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-accent-emerald/20 text-accent-emerald hover:bg-accent-emerald/30 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-surface-3 text-zinc-200 hover:bg-surface-4 transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             New Task
@@ -174,9 +174,9 @@ export default function KanbanBoard({ businesses }: KanbanBoardProps) {
             return (
               <div
                 key={stage.id}
-                className={`w-[220px] flex-shrink-0 flex flex-col rounded-xl border-t-2 ${stage.color} bg-surface-1/50 ${
-                  isDragOver ? "ring-1 ring-accent-emerald/30 bg-surface-1" : ""
-                } transition-all duration-150`}
+                className={`w-[220px] flex-shrink-0 flex flex-col rounded-xl border border-white/5 bg-surface-1/50 ${
+                  isDragOver ? "bg-surface-2" : ""
+                } transition-colors duration-100`}
                 onDragOver={(e) => {
                   e.preventDefault();
                   setDragOverStage(stage.id);
@@ -186,7 +186,7 @@ export default function KanbanBoard({ businesses }: KanbanBoardProps) {
               >
                 {/* Column header */}
                 <div className="px-3 py-2.5 flex items-center justify-between border-b border-white/5">
-                  <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wide">
+                  <span className="text-[11px] font-medium text-zinc-400">
                     {stage.label}
                   </span>
                   <span className="text-[10px] text-zinc-700 font-mono bg-surface-2 px-1.5 py-0.5 rounded">

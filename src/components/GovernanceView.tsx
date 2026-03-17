@@ -67,7 +67,6 @@ export default function GovernanceView() {
       body: JSON.stringify({ path, content: draft }),
     });
 
-    // Update local state immediately
     if (editTarget.type === "governance") {
       setData({ ...data, governance: draft });
     } else {
@@ -99,49 +98,48 @@ export default function GovernanceView() {
   return (
     <div>
       <div className="flex items-center gap-2 mb-5">
-        <Shield className="w-4 h-4 text-accent-emerald" />
+        <Shield className="w-4 h-4 text-zinc-400" />
         <h2 className="text-sm font-semibold text-zinc-200">
           Governance & Protocols
         </h2>
         {savedMsg && (
-          <span className="text-[10px] text-accent-emerald font-mono ml-auto">
-            saved — pull script will sync to disk
+          <span className="text-[10px] text-emerald-400 font-mono ml-auto">
+            Saved
           </span>
         )}
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-5 bg-surface-1 p-1 rounded-lg w-fit">
+      <div className="flex gap-4 mb-5 border-b border-white/5">
         {(
           [
-            { id: "governance", label: "Governance", icon: Shield },
-            { id: "protocols", label: "Protocols", icon: ScrollText },
-            { id: "templates", label: "Templates", icon: FileText },
+            { id: "governance", label: "Governance" },
+            { id: "protocols", label: "Protocols" },
+            { id: "templates", label: "Templates" },
           ] as const
-        ).map(({ id, label, icon: Icon }) => (
+        ).map(({ id, label }) => (
           <button
             key={id}
             onClick={() => {
               setActiveTab(id);
               cancelEdit();
             }}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-150 ${
+            className={`pb-2.5 text-xs font-medium transition-colors duration-100 border-b-2 -mb-px ${
               activeTab === id
-                ? "bg-surface-3 text-zinc-100"
-                : "text-zinc-500 hover:text-zinc-300"
+                ? "border-zinc-100 text-zinc-100"
+                : "border-transparent text-zinc-500 hover:text-zinc-300"
             }`}
           >
-            <Icon className="w-3.5 h-3.5" />
             {label}
           </button>
         ))}
       </div>
 
-      {/* ── Governance tab ── */}
+      {/* Governance tab */}
       {activeTab === "governance" && (
-        <div className="bg-surface-1 rounded-xl border border-white/5 overflow-hidden animate-fade-in">
+        <div className="bg-surface-1 rounded-xl border border-white/5 overflow-hidden">
           <div className="flex items-center justify-between px-5 py-2.5 border-b border-white/5">
-            <span className="text-[11px] text-zinc-600 font-mono">GOVERNANCE.md</span>
+            <span className="text-[11px] text-zinc-600 font-mono">Governance.md</span>
             <div className="flex items-center gap-2">
               {isEditing && editTarget?.type === "governance" ? (
                 <>
@@ -154,7 +152,7 @@ export default function GovernanceView() {
                   <button
                     onClick={saveEdit}
                     disabled={saving}
-                    className="flex items-center gap-1 text-xs text-accent-emerald hover:text-emerald-300 px-2 py-1 rounded transition-colors disabled:opacity-50"
+                    className="flex items-center gap-1 text-xs text-zinc-100 hover:text-white px-2 py-1 rounded transition-colors disabled:opacity-50"
                   >
                     <Check className="w-3.5 h-3.5" />
                     {saving ? "Saving..." : "Save"}
@@ -185,9 +183,9 @@ export default function GovernanceView() {
         </div>
       )}
 
-      {/* ── Protocols tab ── */}
+      {/* Protocols tab */}
       {activeTab === "protocols" && (
-        <div className="space-y-3 animate-fade-in">
+        <div className="space-y-3">
           {data.protocols.map((protocol) => {
             const isEditingThis =
               isEditing &&
@@ -205,17 +203,17 @@ export default function GovernanceView() {
                       activeProtocol === protocol.name ? null : protocol.name
                     )
                   }
-                  className="w-full flex items-center justify-between px-5 py-3 hover:bg-surface-2/50 transition-colors"
+                  className="w-full flex items-center justify-between px-5 py-3 hover:bg-surface-2 transition-colors"
                 >
                   <div className="flex items-center gap-2">
-                    <ScrollText className="w-3.5 h-3.5 text-accent-cyan" />
+                    <ScrollText className="w-3.5 h-3.5 text-zinc-500" />
                     <span className="text-sm font-medium text-zinc-200">
                       {protocol.name}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-xs text-zinc-600 font-mono">
-                      _shared/protocols/{protocol.name}.md
+                      protocols/{protocol.name}.md
                     </span>
                     {isEditingThis ? (
                       <div
@@ -231,7 +229,7 @@ export default function GovernanceView() {
                         <button
                           onClick={saveEdit}
                           disabled={saving}
-                          className="flex items-center gap-1 text-xs text-accent-emerald hover:text-emerald-300 px-2 py-1 rounded transition-colors disabled:opacity-50"
+                          className="flex items-center gap-1 text-xs text-zinc-100 hover:text-white px-2 py-1 rounded transition-colors disabled:opacity-50"
                         >
                           <Check className="w-3.5 h-3.5" />
                           {saving ? "Saving..." : "Save"}
@@ -252,7 +250,7 @@ export default function GovernanceView() {
                   </div>
                 </button>
                 {(activeProtocol === protocol.name || isEditingThis) && (
-                  <div className="border-t border-white/5 animate-fade-in">
+                  <div className="border-t border-white/5">
                     {isEditingThis ? (
                       <textarea
                         value={draft}
@@ -273,23 +271,23 @@ export default function GovernanceView() {
         </div>
       )}
 
-      {/* ── Templates tab ── */}
+      {/* Templates tab */}
       {activeTab === "templates" && (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {data.templates.map((template) => (
             <div
               key={template.name}
               className="bg-surface-1 rounded-xl border border-white/5 p-4 flex items-center gap-3"
             >
               <div className="p-2 rounded-lg bg-surface-2">
-                <FileText className="w-4 h-4 text-accent-amber" />
+                <FileText className="w-4 h-4 text-zinc-400" />
               </div>
               <div>
                 <div className="text-sm font-medium text-zinc-200">
                   {template.name}
                 </div>
                 <div className="text-[11px] text-zinc-600 font-mono">
-                  _shared/templates/
+                  templates/
                 </div>
               </div>
             </div>

@@ -16,6 +16,12 @@ import {
   ArrowRight,
 } from "lucide-react";
 
+type StatItem = {
+  label: string;
+  value: number;
+  icon: typeof Building2;
+};
+
 interface Department {
   name: string;
   files: string[];
@@ -75,35 +81,15 @@ export default function Home() {
         <main className="flex-1 overflow-y-auto p-6">
           {/* ── Dashboard View ── */}
           {view === "dashboard" && (
-            <div className="space-y-6 animate-fade-in">
+            <div className="space-y-6 ">
               {/* Stats row */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {[
-                  {
-                    label: "Businesses",
-                    value: businesses.length,
-                    icon: Building2,
-                    color: "text-accent-emerald",
-                  },
-                  {
-                    label: "Departments",
-                    value: totalDepts,
-                    icon: FolderTree,
-                    color: "text-accent-cyan",
-                  },
-                  {
-                    label: "Total Files",
-                    value: totalFiles,
-                    icon: FileText,
-                    color: "text-accent-amber",
-                  },
-                  {
-                    label: "Active",
-                    value: activeBiz,
-                    icon: Boxes,
-                    color: "text-accent-violet",
-                  },
-                ].map((stat) => {
+                {([
+                  { label: "Businesses", value: businesses.length, icon: Building2 },
+                  { label: "Departments", value: totalDepts, icon: FolderTree },
+                  { label: "Total Files", value: totalFiles, icon: FileText },
+                  { label: "Active", value: activeBiz, icon: Boxes },
+                ] as StatItem[]).map((stat) => {
                   const Icon = stat.icon;
                   return (
                     <div
@@ -111,13 +97,13 @@ export default function Home() {
                       className="bg-surface-1 rounded-xl border border-white/5 p-4 flex items-center gap-4"
                     >
                       <div className="p-2.5 rounded-lg bg-surface-2">
-                        <Icon className={`w-5 h-5 ${stat.color}`} />
+                        <Icon className="w-5 h-5 text-zinc-400" />
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-zinc-100">
                           {stat.value}
                         </div>
-                        <div className="text-[11px] text-zinc-600 uppercase tracking-wide">
+                        <div className="text-[11px] text-zinc-600">
                           {stat.label}
                         </div>
                       </div>
@@ -164,14 +150,14 @@ export default function Home() {
 
           {/* ── Pipeline View ── */}
           {view === "pipeline" && (
-            <div className="h-[calc(100vh-6rem)] animate-fade-in">
+            <div className="h-[calc(100vh-6rem)] ">
               <KanbanBoard businesses={businesses} />
             </div>
           )}
 
           {/* ── Businesses View ── */}
           {view === "businesses" && (
-            <div className="space-y-4 animate-fade-in">
+            <div className="space-y-4 ">
               <h2 className="text-sm font-semibold text-zinc-300 mb-4">
                 All Businesses
               </h2>
@@ -194,21 +180,21 @@ export default function Home() {
 
           {/* ── Governance View ── */}
           {view === "governance" && (
-            <div className="animate-fade-in">
+            <div className="">
               <GovernanceView />
             </div>
           )}
 
           {/* ── Live Feed View ── */}
           {view === "feed" && (
-            <div className="bg-surface-1 rounded-xl border border-white/5 p-5 h-[calc(100vh-6rem)] animate-fade-in">
+            <div className="bg-surface-1 rounded-xl border border-white/5 p-5 h-[calc(100vh-6rem)] ">
               <LiveFeed />
             </div>
           )}
 
           {/* ── Owner View ── */}
           {view === "owner" && (
-            <div className="animate-fade-in">
+            <div className="">
               <OwnerPanel />
             </div>
           )}
