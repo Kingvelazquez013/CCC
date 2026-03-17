@@ -64,3 +64,5 @@ body {
 .glow-cyan { box-shadow: 0 0 20px rgba(34, 211, 238, 0.08); }
 .glow-amber { box-shadow: 0 0 20px rgba(251, 191, 36, 0.08); }
 .glow-violet { box-shadow: 0 0 20px rgba(167, 139, 250, 0.08); }
+.glow-warning { box-shadow: 0 0 20px rgba(251, 191, 36, 0.15); }
+.glow-danger { box-shadow: 0 0 20px rgba(239, 68, 68, 0.15); }

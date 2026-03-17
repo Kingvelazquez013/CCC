@@ -6,6 +6,7 @@ import {
   Trash2,
   Building2,
   User,
+  Clock,
 } from "lucide-react";
 
 interface Task {
@@ -26,6 +27,30 @@ const PRIORITY_COLORS: Record<string, string> = {
   high: "bg-amber-500/20 text-amber-400 border-amber-500/30",
   medium: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
   low: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30",
+};
+
+/* ── Task Aging ─────────────────────────────────────────────────── */
+const AGING_STAGES = new Set(["assigned", "working", "review", "approved"]);
+const AGING_THRESHOLDS = { warning: 1, danger: 3 }; // days
+
+type AgingLevel = "normal" | "warning" | "danger";
+
+function getAgingLevel(stage: string, updatedAt: string): AgingLevel {
+  if (!AGING_STAGES.has(stage)) return "normal";
+  const days = (Date.now() - new Date(updatedAt).getTime()) / 86_400_000;
+  if (days >= AGING_THRESHOLDS.danger) return "danger";
+  if (days >= AGING_THRESHOLDS.warning) return "warning";
+  return "normal";
+}
+
+function getDaysInStage(updatedAt: string): number {
+  return Math.floor((Date.now() - new Date(updatedAt).getTime()) / 86_400_000);
+}
+
+const AGING_BORDER: Record<AgingLevel, string> = {
+  normal: "border-white/5 hover:border-white/10",
+  warning: "border-amber-500/40 hover:border-amber-500/60 glow-warning",
+  danger: "border-red-500/50 hover:border-red-500/70 glow-danger animate-pulse-danger",
 };
 
 const BIZ_COLORS: Record<string, string> = {
@@ -53,13 +78,15 @@ export default function TaskCard({
   onDragStart,
 }: TaskCardProps) {
   const canMoveForward = task.stage !== "done";
+  const agingLevel = getAgingLevel(task.stage, task.updated_at);
+  const daysInStage = getDaysInStage(task.updated_at);
 
   return (
     <div
       draggable={draggable}
       onDragStart={onDragStart}
       onClick={onEdit}
-      className="bg-surface-2 rounded-lg border border-white/5 p-3 cursor-grab active:cursor-grabbing hover:border-white/10 transition-all duration-150 group"
+      className={`bg-surface-2 rounded-lg border p-3 cursor-grab active:cursor-grabbing transition-all duration-150 group ${AGING_BORDER[agingLevel]}`}
     >
       {/* Drag handle + priority */}
       <div className="flex items-center justify-between mb-2">
@@ -70,6 +97,19 @@ export default function TaskCard({
           >
             {task.priority}
           </span>
+          {agingLevel !== "normal" && (
+            <span
+              className={`flex items-center gap-0.5 text-[9px] font-mono font-medium px-1.5 py-0.5 rounded ${
+                agingLevel === "danger"
+                  ? "bg-red-500/20 text-red-400"
+                  : "bg-amber-500/20 text-amber-400"
+              }`}
+              title={`${daysInStage}d in ${task.stage}`}
+            >
+              <Clock className="w-2.5 h-2.5" />
+              {daysInStage}d
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           {canMoveForward && (
