@@ -9,7 +9,7 @@ import GovernanceView from "@/components/GovernanceView";
 import OwnerPanel from "@/components/OwnerPanel";
 import KanbanBoard from "@/components/KanbanBoard";
 import AgentsPanel from "@/components/AgentsPanel";
-import TerminalPanel from "@/components/TerminalPanel";
+import TerminalDock from "@/components/TerminalDock";
 import {
   Building2,
   FolderTree,
@@ -44,6 +44,23 @@ export default function Home() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(false);
   const [expandedBiz, setExpandedBiz] = useState<string | null>(null);
+  const [terminalOpen, setTerminalOpen] = useState(false);
+
+  const toggleTerminal = useCallback(() => {
+    setTerminalOpen((prev) => !prev);
+  }, []);
+
+  // Global keyboard shortcut: Ctrl+` to toggle terminal
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === "`") {
+        e.preventDefault();
+        toggleTerminal();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [toggleTerminal]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -75,59 +92,101 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen">
-      <Header onRefresh={fetchData} loading={loading} />
+      <Header
+        onRefresh={fetchData}
+        loading={loading}
+        terminalOpen={terminalOpen}
+        onToggleTerminal={toggleTerminal}
+      />
 
       <div className="flex flex-1 overflow-hidden">
         <Sidebar active={view} onChange={setView} />
 
-        <main className="flex-1 overflow-y-auto p-6">
-          {/* ── Dashboard View ── */}
-          {view === "dashboard" && (
-            <div className="space-y-6 ">
-              {/* Stats row */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {([
-                  { label: "Businesses", value: businesses.length, icon: Building2 },
-                  { label: "Departments", value: totalDepts, icon: FolderTree },
-                  { label: "Total Files", value: totalFiles, icon: FileText },
-                  { label: "Active", value: activeBiz, icon: Boxes },
-                ] as StatItem[]).map((stat) => {
-                  const Icon = stat.icon;
-                  return (
-                    <div
-                      key={stat.label}
-                      className="bg-surface-1 rounded-xl border border-white/5 p-4 flex items-center gap-4"
-                    >
-                      <div className="p-2.5 rounded-lg bg-surface-2">
-                        <Icon className="w-5 h-5 text-zinc-400" />
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-zinc-100">
-                          {stat.value}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <main className="flex-1 overflow-y-auto p-6">
+            {/* ── Dashboard View ── */}
+            {view === "dashboard" && (
+              <div className="space-y-6 ">
+                {/* Stats row */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {([
+                    { label: "Businesses", value: businesses.length, icon: Building2 },
+                    { label: "Departments", value: totalDepts, icon: FolderTree },
+                    { label: "Total Files", value: totalFiles, icon: FileText },
+                    { label: "Active", value: activeBiz, icon: Boxes },
+                  ] as StatItem[]).map((stat) => {
+                    const Icon = stat.icon;
+                    return (
+                      <div
+                        key={stat.label}
+                        className="bg-surface-1 rounded-xl border border-white/5 p-4 flex items-center gap-4"
+                      >
+                        <div className="p-2.5 rounded-lg bg-surface-2">
+                          <Icon className="w-5 h-5 text-zinc-400" />
                         </div>
-                        <div className="text-[11px] text-zinc-600">
-                          {stat.label}
+                        <div>
+                          <div className="text-2xl font-bold text-zinc-100">
+                            {stat.value}
+                          </div>
+                          <div className="text-[11px] text-zinc-600">
+                            {stat.label}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Business cards */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-sm font-semibold text-zinc-300">
-                    Business Overview
-                  </h2>
-                  <button
-                    onClick={() => setView("businesses")}
-                    className="flex items-center gap-1 text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors"
-                  >
-                    View all <ArrowRight className="w-3 h-3" />
-                  </button>
+                    );
+                  })}
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
+                {/* Business cards */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-sm font-semibold text-zinc-300">
+                      Business Overview
+                    </h2>
+                    <button
+                      onClick={() => setView("businesses")}
+                      className="flex items-center gap-1 text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors"
+                    >
+                      View all <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    {businesses.map((biz) => (
+                      <BusinessCard
+                        key={biz.slug}
+                        business={biz}
+                        expanded={expandedBiz === biz.slug}
+                        onToggle={() =>
+                          setExpandedBiz(
+                            expandedBiz === biz.slug ? null : biz.slug
+                          )
+                        }
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Live feed preview */}
+                <div className="bg-surface-1 rounded-xl border border-white/5 p-5">
+                  <LiveFeed />
+                </div>
+              </div>
+            )}
+
+            {/* ── Pipeline View ── */}
+            {view === "pipeline" && (
+              <div className="h-[calc(100vh-6rem)] ">
+                <KanbanBoard businesses={businesses} />
+              </div>
+            )}
+
+            {/* ── Businesses View ── */}
+            {view === "businesses" && (
+              <div className="space-y-4 ">
+                <h2 className="text-sm font-semibold text-zinc-300 mb-4">
+                  All Businesses
+                </h2>
+                <div className="grid gap-4 sm:grid-cols-2">
                   {businesses.map((biz) => (
                     <BusinessCard
                       key={biz.slug}
@@ -142,79 +201,43 @@ export default function Home() {
                   ))}
                 </div>
               </div>
+            )}
 
-              {/* Live feed preview */}
-              <div className="bg-surface-1 rounded-xl border border-white/5 p-5">
+            {/* ── Governance View ── */}
+            {view === "governance" && (
+              <div className="">
+                <GovernanceView />
+              </div>
+            )}
+
+            {/* ── Live Feed View ── */}
+            {view === "feed" && (
+              <div className="bg-surface-1 rounded-xl border border-white/5 p-5 h-[calc(100vh-6rem)] ">
                 <LiveFeed />
               </div>
-            </div>
-          )}
+            )}
 
-          {/* ── Pipeline View ── */}
-          {view === "pipeline" && (
-            <div className="h-[calc(100vh-6rem)] ">
-              <KanbanBoard businesses={businesses} />
-            </div>
-          )}
-
-          {/* ── Businesses View ── */}
-          {view === "businesses" && (
-            <div className="space-y-4 ">
-              <h2 className="text-sm font-semibold text-zinc-300 mb-4">
-                All Businesses
-              </h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {businesses.map((biz) => (
-                  <BusinessCard
-                    key={biz.slug}
-                    business={biz}
-                    expanded={expandedBiz === biz.slug}
-                    onToggle={() =>
-                      setExpandedBiz(
-                        expandedBiz === biz.slug ? null : biz.slug
-                      )
-                    }
-                  />
-                ))}
+            {/* ── Owner View ── */}
+            {view === "owner" && (
+              <div className="">
+                <OwnerPanel />
               </div>
-            </div>
-          )}
+            )}
 
-          {/* ── Governance View ── */}
-          {view === "governance" && (
-            <div className="">
-              <GovernanceView />
-            </div>
-          )}
+            {/* ── Agents View ── */}
+            {view === "agents" && (
+              <div className="">
+                <AgentsPanel />
+              </div>
+            )}
+          </main>
 
-          {/* ── Live Feed View ── */}
-          {view === "feed" && (
-            <div className="bg-surface-1 rounded-xl border border-white/5 p-5 h-[calc(100vh-6rem)] ">
-              <LiveFeed />
-            </div>
-          )}
-
-          {/* ── Owner View ── */}
-          {view === "owner" && (
-            <div className="">
-              <OwnerPanel />
-            </div>
-          )}
-
-          {/* ── Agents View ── */}
-          {view === "agents" && (
-            <div className="">
-              <AgentsPanel />
-            </div>
-          )}
-
-          {/* ── Terminal View ── */}
-          {view === "terminal" && (
-            <div className="">
-              <TerminalPanel />
-            </div>
-          )}
-        </main>
+          {/* ── Terminal Dock (bottom panel) ── */}
+          <TerminalDock
+            visible={terminalOpen}
+            onClose={() => setTerminalOpen(false)}
+          />
+        </div>
       </div>
     </div>
   );
