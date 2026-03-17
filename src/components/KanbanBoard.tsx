@@ -146,7 +146,7 @@ export default function KanbanBoard({ businesses }: KanbanBoardProps) {
               onChange={(e) => setFilterBiz(e.target.value)}
               className="bg-transparent text-xs text-zinc-300 focus:outline-none cursor-pointer"
             >
-              <option value="all">All businesses</option>
+              <option value="all">All workspaces</option>
               {businesses.map((b) => (
                 <option key={b.slug} value={b.slug}>
                   {b.name}

@@ -67,6 +67,194 @@ const EXEC_STATUS_COLOR: Record<string, string> = {
   timeout: "text-amber-400",
 };
 
+/* ── Model catalog by provider ────────────────────────────────── */
+
+interface ModelOption {
+  id: string;
+  label: string;
+  provider: string;
+}
+
+const MODEL_CATALOG: ModelOption[] = [
+  // Anthropic
+  { id: "claude-opus-4-6", label: "Claude Opus 4.6", provider: "anthropic" },
+  { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6", provider: "anthropic" },
+  { id: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5", provider: "anthropic" },
+  // OpenAI
+  { id: "gpt-4o", label: "GPT-4o", provider: "openai" },
+  { id: "gpt-4o-mini", label: "GPT-4o Mini", provider: "openai" },
+  { id: "o3", label: "o3", provider: "openai" },
+  { id: "o4-mini", label: "o4-mini", provider: "openai" },
+  // DeepSeek
+  { id: "deepseek-chat", label: "DeepSeek V3", provider: "deepseek" },
+  { id: "deepseek-reasoner", label: "DeepSeek R1", provider: "deepseek" },
+  // Google
+  { id: "gemini-2.5-pro", label: "Gemini 2.5 Pro", provider: "google" },
+  { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash", provider: "google" },
+  // Local / Ollama
+  { id: "llama3.3:70b", label: "Llama 3.3 70B", provider: "ollama" },
+  { id: "codellama:34b", label: "Code Llama 34B", provider: "ollama" },
+  { id: "mistral:7b", label: "Mistral 7B", provider: "ollama" },
+];
+
+const PROVIDER_LABELS: Record<string, string> = {
+  anthropic: "Anthropic",
+  openai: "OpenAI",
+  deepseek: "DeepSeek",
+  google: "Google",
+  ollama: "Ollama (local)",
+};
+
+/* ── Built-in roles + custom ─────────────────────────────────── */
+
+const BUILT_IN_ROLES = [
+  { value: "builder", label: "Builder", desc: "Writes code, fixes bugs, builds features" },
+  { value: "writer", label: "Writer", desc: "Creates content, copy, blog posts" },
+  { value: "researcher", label: "Researcher", desc: "Gathers info, analyzes data" },
+  { value: "reviewer", label: "Reviewer", desc: "Reviews work quality, verifies completeness" },
+  { value: "social-media-manager", label: "Social Media Manager", desc: "Manages social media presence and engagement" },
+  { value: "sales-manager", label: "Sales Manager", desc: "Handles sales strategy and outreach" },
+  { value: "project-manager", label: "Project Manager", desc: "Coordinates tasks, timelines, and teams" },
+  { value: "designer", label: "Designer", desc: "UI/UX design, visual assets, branding" },
+  { value: "data-analyst", label: "Data Analyst", desc: "Analyzes metrics, creates reports" },
+  { value: "qa-tester", label: "QA Tester", desc: "Tests features, finds bugs, writes test cases" },
+  { value: "devops", label: "DevOps Engineer", desc: "CI/CD, infrastructure, deployments" },
+  { value: "support", label: "Support Agent", desc: "Customer support, troubleshooting" },
+];
+
+/* ── Model Selector Component ─────────────────────────────────── */
+
+function ModelSelector({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  const [showCustom, setShowCustom] = useState(false);
+  const isCustom = value && !MODEL_CATALOG.find((m) => m.id === value);
+
+  if (showCustom || isCustom) {
+    return (
+      <div className="flex gap-1">
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Custom model ID..."
+          className="flex-1 bg-surface-2 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-white/20"
+        />
+        <button
+          type="button"
+          onClick={() => {
+            setShowCustom(false);
+            if (isCustom) onChange(MODEL_CATALOG[0].id);
+          }}
+          className="px-2 py-1.5 text-[10px] text-zinc-500 hover:text-zinc-300"
+        >
+          List
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex gap-1">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="flex-1 bg-surface-2 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-white/20"
+      >
+        {placeholder && <option value="">{placeholder}</option>}
+        {Object.keys(PROVIDER_LABELS).map((provider) => {
+          const models = MODEL_CATALOG.filter((m) => m.provider === provider);
+          if (models.length === 0) return null;
+          return (
+            <optgroup key={provider} label={PROVIDER_LABELS[provider]}>
+              {models.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </optgroup>
+          );
+        })}
+      </select>
+      <button
+        type="button"
+        onClick={() => setShowCustom(true)}
+        className="px-2 py-1.5 text-[10px] text-zinc-500 hover:text-zinc-300"
+        title="Enter custom model ID"
+      >
+        Custom
+      </button>
+    </div>
+  );
+}
+
+/* ── Role Selector Component ──────────────────────────────────── */
+
+function RoleSelector({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [showCustom, setShowCustom] = useState(false);
+  const isCustom = value && !BUILT_IN_ROLES.find((r) => r.value === value);
+
+  if (showCustom || isCustom) {
+    return (
+      <div className="flex gap-1">
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Custom role..."
+          className="flex-1 bg-surface-2 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-white/20"
+        />
+        <button
+          type="button"
+          onClick={() => {
+            setShowCustom(false);
+            if (isCustom) onChange(BUILT_IN_ROLES[0].value);
+          }}
+          className="px-2 py-1.5 text-[10px] text-zinc-500 hover:text-zinc-300"
+        >
+          List
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex gap-1">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="flex-1 bg-surface-2 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-white/20"
+      >
+        {BUILT_IN_ROLES.map((r) => (
+          <option key={r.value} value={r.value}>
+            {r.label}
+          </option>
+        ))}
+      </select>
+      <button
+        type="button"
+        onClick={() => setShowCustom(true)}
+        className="px-2 py-1.5 text-[10px] text-zinc-500 hover:text-zinc-300"
+        title="Enter custom role"
+      >
+        Custom
+      </button>
+    </div>
+  );
+}
+
+/* ── Main Component ───────────────────────────────────────────── */
+
 export default function AgentsPanel() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,7 +277,6 @@ export default function AgentsPanel() {
     fetchAgents();
   }, [fetchAgents]);
 
-  // Auto-refresh every 15s
   useEffect(() => {
     const interval = setInterval(fetchAgents, 15000);
     return () => clearInterval(interval);
@@ -186,6 +373,7 @@ export default function AgentsPanel() {
           {[...enabledAgents, ...disabledAgents].map((agent) => {
             const isExpanded = expandedAgent === agent.id;
             const agentExecs = executions[agent.id] || [];
+            const modelInfo = MODEL_CATALOG.find((m) => m.id === agent.model);
 
             return (
               <div
@@ -199,10 +387,8 @@ export default function AgentsPanel() {
                   className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-surface-2/50 transition-colors"
                   onClick={() => toggleExpand(agent.id)}
                 >
-                  {/* Avatar */}
                   <span className="text-lg">{agent.avatar_emoji}</span>
 
-                  {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-medium text-zinc-200">
@@ -218,8 +404,13 @@ export default function AgentsPanel() {
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-[10px] text-zinc-600 font-mono">
-                        {agent.model}
+                        {modelInfo ? modelInfo.label : agent.model}
                       </span>
+                      {modelInfo && (
+                        <span className="text-[9px] text-zinc-700 bg-surface-2 px-1.5 py-0.5 rounded">
+                          {PROVIDER_LABELS[modelInfo.provider]}
+                        </span>
+                      )}
                       {agent.departments.length > 0 && (
                         <span className="text-[10px] text-zinc-700">
                           {agent.departments.slice(0, 3).join(", ")}
@@ -229,7 +420,6 @@ export default function AgentsPanel() {
                     </div>
                   </div>
 
-                  {/* Toggle + expand */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -258,9 +448,8 @@ export default function AgentsPanel() {
                 {/* Expanded details */}
                 {isExpanded && (
                   <div className="px-4 pb-4 border-t border-white/5">
-                    {/* Agent details */}
                     <div className="grid grid-cols-2 gap-3 py-3">
-                      <DetailItem label="Model" value={agent.model} />
+                      <DetailItem label="Model" value={modelInfo ? modelInfo.label : agent.model} />
                       <DetailItem label="Fallback" value={agent.fallback_model || "none"} />
                       <DetailItem label="Executor" value={agent.executor} />
                       <DetailItem label="Priority floor" value={agent.priority_floor} />
@@ -269,12 +458,11 @@ export default function AgentsPanel() {
                         value={agent.departments.length > 0 ? agent.departments.join(", ") : "all"}
                       />
                       <DetailItem
-                        label="Businesses"
+                        label="Workspaces"
                         value={agent.businesses.length > 0 ? agent.businesses.join(", ") : "all"}
                       />
                     </div>
 
-                    {/* System prompt */}
                     {agent.system_prompt && (
                       <div className="mb-3">
                         <div className="text-[10px] text-zinc-600 mb-1">System prompt</div>
@@ -284,7 +472,6 @@ export default function AgentsPanel() {
                       </div>
                     )}
 
-                    {/* Recent executions */}
                     <div>
                       <div className="text-[10px] text-zinc-600 mb-1.5">Recent executions</div>
                       {agentExecs.length === 0 ? (
@@ -355,6 +542,7 @@ function CreateAgentForm({
   const [role, setRole] = useState("builder");
   const [model, setModel] = useState("claude-sonnet-4-6");
   const [fallbackModel, setFallbackModel] = useState("claude-opus-4-6");
+  const [executor, setExecutor] = useState("claude-cli");
   const [departments, setDepartments] = useState("");
   const [emoji, setEmoji] = useState("");
   const [systemPrompt, setSystemPrompt] = useState("");
@@ -373,6 +561,7 @@ function CreateAgentForm({
           role,
           model: model.trim(),
           fallback_model: fallbackModel.trim() || null,
+          executor,
           departments: departments
             .split(",")
             .map((d) => d.trim())
@@ -397,57 +586,71 @@ function CreateAgentForm({
         </button>
       </div>
       <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="grid grid-cols-3 gap-2">
+        {/* Name + Emoji */}
+        <div className="grid grid-cols-4 gap-2">
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Name (e.g. eng-agent)"
-            className="col-span-2 bg-surface-2 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-white/20"
+            className="col-span-3 bg-surface-2 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-white/20"
           />
           <input
             value={emoji}
             onChange={(e) => setEmoji(e.target.value)}
             placeholder="Emoji"
-            className="bg-surface-2 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-white/20"
+            className="bg-surface-2 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-white/20 text-center"
           />
         </div>
-        <div className="grid grid-cols-2 gap-2">
+
+        {/* Role */}
+        <div>
+          <label className="block text-[10px] text-zinc-600 mb-1">Role</label>
+          <RoleSelector value={role} onChange={setRole} />
+        </div>
+
+        {/* Model */}
+        <div>
+          <label className="block text-[10px] text-zinc-600 mb-1">Model</label>
+          <ModelSelector value={model} onChange={setModel} />
+        </div>
+
+        {/* Fallback Model */}
+        <div>
+          <label className="block text-[10px] text-zinc-600 mb-1">Fallback model</label>
+          <ModelSelector value={fallbackModel} onChange={setFallbackModel} placeholder="None" />
+        </div>
+
+        {/* Executor */}
+        <div>
+          <label className="block text-[10px] text-zinc-600 mb-1">Execution backend</label>
           <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="bg-surface-2 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-white/20"
+            value={executor}
+            onChange={(e) => setExecutor(e.target.value)}
+            className="w-full bg-surface-2 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-white/20"
           >
-            <option value="builder">Builder</option>
-            <option value="writer">Writer</option>
-            <option value="researcher">Researcher</option>
-            <option value="reviewer">Reviewer</option>
+            <option value="claude-cli">Claude CLI</option>
+            <option value="http">HTTP (Ollama / OpenAI / custom)</option>
+            <option value="openclaw">OpenClaw Gateway</option>
           </select>
-          <input
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            placeholder="Model"
-            className="bg-surface-2 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-white/20"
-          />
         </div>
-        <input
-          value={fallbackModel}
-          onChange={(e) => setFallbackModel(e.target.value)}
-          placeholder="Fallback model"
-          className="w-full bg-surface-2 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-white/20"
-        />
+
+        {/* Departments */}
         <input
           value={departments}
           onChange={(e) => setDepartments(e.target.value)}
           placeholder="Departments (comma-separated)"
           className="w-full bg-surface-2 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-white/20"
         />
+
+        {/* System prompt */}
         <textarea
           value={systemPrompt}
           onChange={(e) => setSystemPrompt(e.target.value)}
-          placeholder="System prompt..."
+          placeholder="System prompt — describe what this agent does..."
           rows={2}
           className="w-full bg-surface-2 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-white/20 resize-none"
         />
+
         <div className="flex justify-end gap-2">
           <button
             type="button"

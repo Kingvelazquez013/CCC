@@ -2,6 +2,7 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],
+  darkMode: "class",
   theme: {
     extend: {
       fontFamily: {
@@ -10,11 +11,11 @@ const config: Config = {
       },
       colors: {
         surface: {
-          0: "#0a0a0b",
-          1: "#111113",
-          2: "#18181b",
-          3: "#1f1f23",
-          4: "#27272a",
+          0: "var(--surface-0)",
+          1: "var(--surface-1)",
+          2: "var(--surface-2)",
+          3: "var(--surface-3)",
+          4: "var(--surface-4)",
         },
         accent: {
           emerald: "#34d399",
