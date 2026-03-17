@@ -70,18 +70,57 @@ Instructions:
    Do NOT update the stage yourself on failure.
 PROMPT
 
-# ── 4. Escalating model retry: Haiku → Sonnet → Opus ─────────────────────────
-MODELS=("claude-haiku-4-5-20251001" "claude-sonnet-4-6" "claude-opus-4-6")
-MODEL_NAMES=("Haiku" "Sonnet" "Opus")
+# ── 4. Route to the right agent based on department ──────────────────────────
+#
+# Engineering tasks (engineering, dev, development, infra, platform) start at
+# Sonnet with Opus fallback — they need strong reasoning + code generation.
+#
+# All other tasks (marketing, sales, ops, support, etc.) start at Haiku with
+# Sonnet → Opus escalation — cheaper and fast enough for non-code work.
+#
+# Override: set CCC_FORCE_MODEL in your env to skip routing entirely.
+
+route_agent() {
+  local dept
+  dept=$(echo "$TASK_DEPT" | tr '[:upper:]' '[:lower:]')
+
+  case "$dept" in
+    engineering|dev|development|infra|platform|backend|frontend|devops|data)
+      echo "engineering"
+      ;;
+    *)
+      echo "general"
+      ;;
+  esac
+}
+
+AGENT_TYPE=$(route_agent)
+
+if [ -n "${CCC_FORCE_MODEL:-}" ]; then
+  MODELS=("$CCC_FORCE_MODEL")
+  MODEL_NAMES=("${CCC_FORCE_MODEL}")
+  AGENT_LABEL="custom"
+elif [ "$AGENT_TYPE" = "engineering" ]; then
+  MODELS=("claude-sonnet-4-6" "claude-opus-4-6")
+  MODEL_NAMES=("Sonnet" "Opus")
+  AGENT_LABEL="eng-agent"
+else
+  MODELS=("claude-haiku-4-5-20251001" "claude-sonnet-4-6" "claude-opus-4-6")
+  MODEL_NAMES=("Haiku" "Sonnet" "Opus")
+  AGENT_LABEL="general-agent"
+fi
+
+log "Routed as ${AGENT_TYPE} → agent=${AGENT_LABEL}, models=[${MODEL_NAMES[*]}]"
+
 SUCCESS=false
 LAST_ERROR=""
 
-for i in 0 1 2; do
+for i in "${!MODELS[@]}"; do
   MODEL="${MODELS[$i]}"
   MODEL_NAME="${MODEL_NAMES[$i]}"
   log "Trying ${MODEL_NAME}..."
 
-  patch_task "{\"assigned_agent\":\"${MODEL_NAME}\"}"
+  patch_task "{\"assigned_agent\":\"${AGENT_LABEL} (${MODEL_NAME})\"}"
 
   RESULT=$(claude --model "$MODEL" -p "$WORK_PROMPT" --dangerously-skip-permissions 2>&1) || true
 

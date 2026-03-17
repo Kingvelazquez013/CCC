@@ -36,11 +36,16 @@ const config: Config = {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.4" },
         },
+        "pulse-danger": {
+          "0%, 100%": { boxShadow: "0 0 8px rgba(239, 68, 68, 0.0)" },
+          "50%": { boxShadow: "0 0 16px rgba(239, 68, 68, 0.25)" },
+        },
       },
       animation: {
         "fade-in": "fade-in 0.4s ease-out forwards",
         "slide-in": "slide-in 0.35s ease-out forwards",
         pulse_dot: "pulse_dot 2s ease-in-out infinite",
+        "pulse-danger": "pulse-danger 2s ease-in-out infinite",
       },
     },
   },
